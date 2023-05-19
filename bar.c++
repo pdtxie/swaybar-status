@@ -13,12 +13,15 @@ string get_mem() {
 	using std::ifstream; 
 	using std::string;
 
-	// kB
+	// kiB
 	long long tot, free;
 	string tmp;
 
 	ifstream buf("/proc/meminfo");
 	if (!buf) return "err";
+
+	// don't even talk to me right now
+	// TODO: fix
 	buf >> tmp >> tot >> tmp >> tmp >> tmp >> tmp >> tmp >> free;
 	buf.close();
 
@@ -39,7 +42,8 @@ std::pair<string, string> get_td() {
 
 	struct tm* lct = localtime(&t);
 
-	// todo custom icon patch
+	// TODO: custom icon patch
+	
 	/* std::string icon;
 	switch (lct->tm_hour % 12) {
 		case 0: { icon = ""; break; }
@@ -77,10 +81,11 @@ void print_json(std::ostream& os, std::vector<Widget> ws) {
 
 int main() {
 	using std::cout;
+	// TODO: add click here
 	cout << "{\"version\": 1}\n\n";
 	cout << "[[]";
 
-
+	// TODO: take input from click
 	while (true) {
 		cout << ",[";
 	
