@@ -16,7 +16,29 @@
 #include <chrono>
 #include <thread>
 
+#include <sys/types.h>
+#include <stdlib.h>
+#include <signal.h>
+#include <stdio.h>
+
 using std::string;
+
+int is_recording() {
+    FILE* fp;
+    fp = popen("pidof -s wf-recorder", "r");
+
+    char buf[100];
+    fgets(buf, 100, fp);
+    pid_t pid = strtoul(buf, NULL, 10);
+
+    pclose(fp);
+    if (pid == 0) return -1;
+    return pid;
+}
+
+void stop_recording(pid_t pid) {
+    kill(pid, SIGINT);
+}
 
 string get_disk() {
 	struct statvfs statvfs_sb {};
@@ -153,7 +175,7 @@ void print_json(std::ostream& os, std::vector<Widget> ws) {
 int main() {
 	using std::cout;
 	// TODO: add click here
-	cout << "{\"version\": 1}\n\n";
+	cout << "{ \"version\": 1, \"click_events\": true }\n\n";
 	cout << "[[]";
 
 	// TODO: take input from click
@@ -166,6 +188,9 @@ int main() {
 			{"date", "| " + get_td().first + " |"},
 			{"time", get_td().second, "#FFFFFFFF"}
 		};
+
+		if (is_recording() != -1)
+			ws.insert(ws.begin(), (Widget) {"recording", "|  REC |", "#DBBDBDFF"});
 
 		print_json(cout, ws);
 
