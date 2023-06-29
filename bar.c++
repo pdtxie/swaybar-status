@@ -24,20 +24,20 @@
 using std::string;
 
 int is_recording() {
-    FILE* fp;
-    fp = popen("pidof -s wf-recorder", "r");
+	FILE* fp;
+	fp = popen("pidof -s wf-recorder", "r");
 
-    char buf[100];
-    fgets(buf, 100, fp);
-    pid_t pid = strtoul(buf, NULL, 10);
+	char buf[100];
+	fgets(buf, 100, fp);
+	pid_t pid = strtoul(buf, NULL, 10);
 
-    pclose(fp);
-    if (pid == 0) return -1;
-    return pid;
+	pclose(fp);
+	if (pid == 0) return -1;
+	return pid;
 }
 
 void stop_recording(pid_t pid) {
-    kill(pid, SIGINT);
+	kill(pid, SIGINT);
 }
 
 string get_disk() {
@@ -78,7 +78,7 @@ string get_cpu() {
 		fin >> val;
 		total += val;
 		if (i == 4)
-			idle = val;
+		idle = val;
 	}
 
 
@@ -86,17 +86,19 @@ string get_cpu() {
 	auto d_idle = idle - old_idle;
 	auto d_used = d_total - d_idle;
 
+	// INFO: unix only!
 	auto usage = sysconf(_SC_NPROCESSORS_ONLN) * 100 * (double) d_used / d_total;
 
 	old_total = total;
 	old_idle = idle;
 
 	char strbuf[40];
+
 	snprintf(strbuf, sizeof(strbuf), "[%.1f%%]", usage);
-	
+	// TODO: fix sf
+
 	return string(strbuf);
 }
-
 
 string get_mem() {
 	using std::ifstream; 
@@ -122,7 +124,7 @@ string get_mem() {
 
 	char strbuf[40];
 	snprintf(strbuf, sizeof(strbuf), "%.2f/%.2fGiB [%i%%]", used_gb, tot_gb, used_percent);
-	
+
 	return string(strbuf);
 }
 
@@ -134,7 +136,7 @@ std::pair<string, string> get_td() {
 	struct tm* lct = localtime(&t);
 
 	// FIXME: custom icon patch
-	
+
 	/* std::string icon;
 	switch (lct->tm_hour % 12) {
 		case 0: { icon = ""; break; }
@@ -156,10 +158,10 @@ struct Widget {
 string make_obj(Widget w, bool end=false) {
 	char buf[150];
 	snprintf(buf, sizeof(buf), "{\"name\": \"%s\", \
-								\"full_text\": \"%s\", \
-								\"separator\": \"false\", \
-								\"color\": \"%s\"}%c",
-			 w.name.c_str(), w.full_text.c_str(), w.colour.c_str(), end ? ' ': ',');
+\"full_text\": \"%s\", \
+\"separator\": \"false\", \
+	  \"color\": \"%s\"}%c",
+	  w.name.c_str(), w.full_text.c_str(), w.colour.c_str(), end ? ' ': ',');
 	return string(buf);
 }
 
@@ -168,7 +170,7 @@ std::fstream fin("/proc/stat");
 void print_json(std::ostream& os, std::vector<Widget> ws) {
 	for (int i = 0; i < ws.size() - 1; i++)
 		os << make_obj(ws[i]);
-	
+
 	os << make_obj(ws[ws.size() - 1], true);
 }
 
