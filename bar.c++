@@ -21,6 +21,8 @@
 #include <signal.h>
 #include <stdio.h>
 
+#include <future>
+
 using std::string;
 
 int is_recording() {
@@ -174,15 +176,21 @@ void print_json(std::ostream& os, std::vector<Widget> ws) {
 	os << make_obj(ws[ws.size() - 1], true);
 }
 
+string get_click_event() {
+	string str_in; std::cin >> str_in;
+	return str_in;
+}
+
 int main() {
 	using std::cout;
-	// TODO: add click here
+
 	cout << "{ \"version\": 1, \"click_events\": true }\n\n";
 	cout << "[[]";
 
-	// TODO: take input from click
+
+	auto future = std::async(std::launch::async, get_click_event);
+
 	while (true) {
-		cout << ",[";
 		std::vector<Widget> ws = {
 			{"disk", get_disk(), "#DBBDDBFF" },
 			{"cpu", "| " + get_cpu() + " |", "#BDBDDBFF"},
@@ -191,8 +199,22 @@ int main() {
 			{"time", get_td().second, "#FFFFFFFF"}
 		};
 
-		if (is_recording() != -1)
-			ws.insert(ws.begin(), (Widget) {"recording", "|  REC |", "#DBBDBDFF"});
+		int r_pid = is_recording();
+
+		// INFO: non blocking stdin
+		if (future.wait_for(std::chrono::milliseconds(1)) == std::future_status::ready) {
+			auto input = future.get();
+
+			if (r_pid > 0)
+				stop_recording(r_pid);
+
+			future = std::async(std::launch::async, get_click_event);
+		}
+
+		cout << ",[";
+
+		if (r_pid != -1)
+			ws.insert(ws.begin(), (Widget) {"recording", " REC |", "#DBBDBDFF"});
 
 		print_json(cout, ws);
 
@@ -200,6 +222,7 @@ int main() {
 
 		std::this_thread::sleep_for(std::chrono::milliseconds(1000));
 	}
+
 
 	return 0;
 }
